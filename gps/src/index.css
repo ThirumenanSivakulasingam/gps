@@ -1,0 +1,7 @@
+@import "leaflet/dist/leaflet.css";
+
+html, body, #root { height: 100%; margin: 0; }
+
+.leaflet-overlay-pane svg * {
+  pointer-events: visiblePainted;
+}
