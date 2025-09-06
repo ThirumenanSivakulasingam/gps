@@ -210,7 +210,7 @@ export default function MapWithGeoSvg() {
 
         {/* Faculty SVG (lower pane) with adjustable opacity */}
         <SvgOverlayLoader
-          url="/map.svg"               // or import svgUrl from "./assets/map.svg?url"
+          url={import.meta.env.BASE_URL + "map.svg"}               // or import svgUrl from "./assets/map.svg?url"
           bounds={BOUNDS}
           pane="svgPane"
           opacity={svgOpacity}         // ← apply opacity state
