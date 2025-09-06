@@ -1,7 +1,7 @@
 import "./index.css";
-import MapWithGeoSvg from "./MapWithGeoSvg";
+import SmartMobileUI from "./components/SmartMobileUI";
 
 export default function App() {
-  // Main app with SVG, all points, and integrated Node Editor
-  return <MapWithGeoSvg />;
+  // Smart mobile-responsive GPS app with SVG-matched viewport
+  return <SmartMobileUI />;
 }
