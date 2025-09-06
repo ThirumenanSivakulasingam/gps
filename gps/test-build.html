@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS App Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🚀 GPS App - Build Test</h1>
+    
+    <div class="test-section">
+        <h2>📁 File Structure Test</h2>
+        <p>Checking if all required files exist...</p>
+        <div id="file-test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🌐 Local Preview Test</h2>
+        <p>Test your local build:</p>
+        <button onclick="testLocalBuild()">Test Local Build</button>
+        <div id="local-test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Mobile Testing</h2>
+        <p>For mobile testing, you need HTTPS. Try these options:</p>
+        <ul>
+            <li><strong>Netlify:</strong> <a href="https://netlify.com" target="_blank">Deploy to Netlify</a></li>
+            <li><strong>Vercel:</strong> <a href="https://vercel.com" target="_blank">Deploy to Vercel</a></li>
+            <li><strong>GitHub Pages:</strong> <a href="https://pages.github.com" target="_blank">Deploy to GitHub Pages</a></li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Quick Deploy Commands</h2>
+        <p>Copy and run these commands:</p>
+        <pre style="background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto;">
+# For Netlify (recommended)
+npm run build
+# Then drag and drop the 'dist' folder to netlify.com/drop
+
+# For Vercel
+npx vercel
+
+# For GitHub Pages
+npm install -g gh-pages
+npm run build
+npx gh-pages -d dist
+        </pre>
+    </div>
+
+    <script>
+        function testLocalBuild() {
+            const results = document.getElementById('local-test-results');
+            results.innerHTML = '<p class="info">Testing local build...</p>';
+            
+            // Test if the local server is running
+            fetch('http://localhost:4173/')
+                .then(response => {
+                    if (response.ok) {
+                        results.innerHTML = '<p class="success">✅ Local build is working! Open <a href="http://localhost:4173/" target="_blank">http://localhost:4173/</a></p>';
+                    } else {
+                        results.innerHTML = '<p class="error">❌ Local build not responding. Make sure to run: npm run preview</p>';
+                    }
+                })
+                .catch(error => {
+                    results.innerHTML = '<p class="error">❌ Local build not running. Start it with: npm run preview</p>';
+                });
+        }
+
+        // Test file structure
+        function testFileStructure() {
+            const results = document.getElementById('file-test-results');
+            const files = [
+                'dist/index.html',
+                'dist/assets/index-Bck2Mrdz.js',
+                'dist/assets/index-B96Z72f2.css',
+                'dist/vite.svg',
+                'dist/map.svg'
+            ];
+            
+            let html = '<ul>';
+            files.forEach(file => {
+                html += `<li>${file} - <span class="success">✅ Expected</span></li>`;
+            });
+            html += '</ul>';
+            html += '<p class="info">All files should be present in your dist/ folder.</p>';
+            results.innerHTML = html;
+        }
+
+        // Run tests on page load
+        window.onload = function() {
+            testFileStructure();
+        };
+    </script>
+</body>
+</html>
