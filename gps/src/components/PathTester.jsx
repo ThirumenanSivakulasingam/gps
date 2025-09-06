@@ -151,9 +151,11 @@ export default function PathTester({
         borderRadius: '8px',
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
         zIndex: 1000,
-        minWidth: '300px',
+        minWidth: '280px',
+        maxWidth: '90vw',
         maxHeight: '80vh',
-        overflowY: 'auto'
+        overflowY: 'auto',
+        fontSize: '14px'
       }}>
         <h3 style={{ margin: '0 0 15px 0', color: '#333' }}>Path Tester</h3>
         
@@ -286,14 +288,15 @@ export default function PathTester({
         )}
 
         {/* Instructions */}
-        <div style={{ marginTop: '15px', fontSize: '11px', color: '#666' }}>
-          <strong>How to Test:</strong>
-          <br />1. Enable "Location Mapper" toggle in main controls
-          <br />2. Click "Start Walking Test" to begin simulation
-          <br />3. Watch red "T" marker move along real GPS path
-          <br />4. Orange "S" markers show mapped SVG positions
-          <br />5. Check browser console for detailed logs
-          <br />6. This tests if real GPS → SVG mapping works correctly
+        <div style={{ marginTop: '15px', fontSize: '12px', color: '#666' }}>
+          <strong>📱 Mobile Testing:</strong>
+          <br />1. Enable "Location Mapper" toggle
+          <br />2. Click "Start Walking Test" 
+          <br />3. Watch red "T" marker move along path
+          <br />4. Orange "S" markers show SVG positions
+          <br />5. Perfect for testing on mobile devices!
+          <br />
+          <br /><strong>💡 Tip:</strong> Use real GPS on mobile for best results
         </div>
       </div>
 
