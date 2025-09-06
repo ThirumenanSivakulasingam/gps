@@ -1,8 +1,13 @@
 import { dijkstra } from "./dijkstra";
 import { snapToGraph } from "./snap";
 import { haversineMeters, pointInPolygon } from "../utils/geo";
-import { nodes, edges, buildingEntrance } from "./graph";
-import { buildingPolygons, buildingExit } from "./mapdata"; // you create this
+import { nodes, edges, buildingEntrance, buildingExit } from "./graph";
+
+// Simple building polygons - can be expanded later
+const buildingPolygons = {
+  // For now, we'll use empty polygons so the inside-building check is skipped
+  // This can be expanded with actual building polygon coordinates later
+};
 
 // Build a temporary graph if a virtual node is used
 function withVirtualNode(baseEdges, virtual) {
