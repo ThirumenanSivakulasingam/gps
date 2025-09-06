@@ -9,6 +9,8 @@ import LocationMapper from "./components/LocationMapper";
 import NodeEditor from "./components/NodeEditor";
 import CoordinateFinder from "./components/CoordinateFinder";
 import PathTester from "./components/PathTester";
+import EnhancedNavigator from "./components/EnhancedNavigator";
+import "./components/EnhancedNavigator.css";
 import { predefinedPaths } from "./utils/coordinateMapping";
 import { dijkstra } from "./routing/dijkstra";
 import { nearestNode } from "./routing/astar";
@@ -134,6 +136,7 @@ export default function MapWithGeoSvg() {
   const [coordinateFinderActive, setCoordinateFinderActive] = useState(false); // ← Coordinate finder toggle
   const [locationMapperActive, setLocationMapperActive] = useState(false); // ← Location mapper toggle
   const [pathTesterActive, setPathTesterActive] = useState(false); // ← Path tester toggle
+  const [enhancedNavigatorActive, setEnhancedNavigatorActive] = useState(false); // ← Enhanced navigator toggle
   const [showPredefinedPath, setShowPredefinedPath] = useState(true); // ← Show predefined path toggle
   const [showGraphEdges, setShowGraphEdges] = useState(true);    // ← Graph edges toggle
   const [showGraphLabels, setShowGraphLabels] = useState(true);  // ← Graph labels toggle
@@ -323,6 +326,11 @@ export default function MapWithGeoSvg() {
             console.log('🧪 Test progress:', progress);
           }}
         />
+
+        {/* Enhanced Navigator Component */}
+        {enhancedNavigatorActive && (
+          <EnhancedNavigator />
+        )}
       </MapContainer>
 
       {/* Controls UI (top-right) */}
@@ -400,6 +408,17 @@ export default function MapWithGeoSvg() {
             style={{ marginRight: 6 }}
           />
           Path Tester
+        </label>
+
+        {/* Enhanced Navigator Toggle */}
+        <label style={{ display: "block", fontSize: 12, marginBottom: 6 }}>
+          <input 
+            type="checkbox" 
+            checked={enhancedNavigatorActive} 
+            onChange={e => setEnhancedNavigatorActive(e.target.checked)}
+            style={{ marginRight: 6 }}
+          />
+          Enhanced Navigator
         </label>
 
         {/* Show Predefined Path Toggle */}
