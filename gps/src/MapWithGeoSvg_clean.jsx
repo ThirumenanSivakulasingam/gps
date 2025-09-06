@@ -5,11 +5,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import LocationWatcher from "./components/LocationWatcher";
-import LocationMapper from "./components/LocationMapper";
 import NodeEditor from "./components/NodeEditor";
-import CoordinateFinder from "./components/CoordinateFinder";
-import PathTester from "./components/PathTester";
-import { predefinedPaths } from "./utils/coordinateMapping";
 import { dijkstra } from "./routing/dijkstra";
 import { nearestNode } from "./routing/astar";
 import { nodes, edges, buildingEntrance } from "./routing/graph";
@@ -21,12 +17,10 @@ function metersToDegLng(m, atLat) {
 }
 
 /* ---------------- Bounds for the map ---------------- */
-// Original precise bounds from the campus map
-const TOP_LEFT = [7.255565, 80.590510];       // [latN, lngW]
-const BOTTOM_RIGHT = [7.251971, 80.593542];   // [latS, lngE]
-const SW = [BOTTOM_RIGHT[0], TOP_LEFT[1]];
-const NE = [TOP_LEFT[0], BOTTOM_RIGHT[1]];
-const BOUNDS = L.latLngBounds(SW, NE);
+const BOUNDS = L.latLngBounds(
+  [7.250, 80.590], // SW corner
+  [7.256, 80.595]  // NE corner
+);
 
 /** SVG overlay with opacity + click forwarding + (optional) user dot hook */
 function SvgOverlayLoader({ url, bounds, pane = "svgPane", opacity = 1, onPick, userPos }) {
@@ -131,10 +125,6 @@ export default function MapWithGeoSvg() {
   const [svgOpacity, setSvgOpacity] = useState(1.0); // ← SVG opacity state (0..1)
   const [showGraphPoints, setShowGraphPoints] = useState(false); // ← Graph points toggle
   const [nodeEditorActive, setNodeEditorActive] = useState(false); // ← Node editor toggle
-  const [coordinateFinderActive, setCoordinateFinderActive] = useState(false); // ← Coordinate finder toggle
-  const [locationMapperActive, setLocationMapperActive] = useState(false); // ← Location mapper toggle
-  const [pathTesterActive, setPathTesterActive] = useState(false); // ← Path tester toggle
-  const [showPredefinedPath, setShowPredefinedPath] = useState(true); // ← Show predefined path toggle
   const [showGraphEdges, setShowGraphEdges] = useState(true);    // ← Graph edges toggle
   const [showGraphLabels, setShowGraphLabels] = useState(true);  // ← Graph labels toggle
   
@@ -251,51 +241,18 @@ export default function MapWithGeoSvg() {
         })}
 
         {/* User live location & route (drawn on top) */}
-        {locationMapperActive ? (
-          <LocationMapper 
-            onMove={setUserPos} 
-            onLocationMapped={(mapping) => {
-              console.log('🗺️ Location mapped:', mapping);
-            }}
-            pane="routesPane"
-            accuracyMax={150}
-            staleMs={15000}
-            ema={0.3}
-            jumpGuard={12}
-            showSVGReference={true}
-            reportRaw={(ll, acc) => {
-              console.log('GPS Fix:', ll, 'Accuracy:', acc, 'm');
-            }}
-          />
-        ) : (
-          <LocationWatcher 
-            onMove={setUserPos} 
-            pane="routesPane"
-            accuracyMax={150}
-            staleMs={15000}
-            ema={0.3}
-            jumpGuard={12}
-            reportRaw={(ll, acc) => {
-              console.log('GPS Fix:', ll, 'Accuracy:', acc, 'm');
-            }}
-          />
-        )}
+        <LocationWatcher 
+          onMove={setUserPos} 
+          pane="routesPane"
+          accuracyMax={150}  // Increased from 100m to 150m for better reliability
+          staleMs={15000}    // Increased from 10s to 15s for better reliability
+          ema={0.3}          // Slightly more smoothing for noisy GPS
+          jumpGuard={12}     // Increased from 8 m/s to 12 m/s (43 km/h) for faster movement
+          reportRaw={(ll, acc) => {
+            console.log('GPS Fix:', ll, 'Accuracy:', acc, 'm');
+          }}
+        />
 
-        {/* Predefined path: ENTRY -> node1 -> node2 -> node8 -> node24 */}
-        {showPredefinedPath && predefinedPaths.mainPath.length > 1 && (
-          <Polyline 
-            positions={predefinedPaths.mainPath} 
-            pathOptions={{
-              color: '#ff6b35',
-              weight: 4,
-              opacity: 0.8,
-              dashArray: '10, 5'
-            }}
-            pane="routesPane" 
-          />
-        )}
-
-        {/* Dynamic route */}
         {route.length > 1 && (
           <Polyline positions={route} weight={6} opacity={0.95} pane="routesPane" />
         )}
@@ -305,23 +262,6 @@ export default function MapWithGeoSvg() {
           isActive={nodeEditorActive}
           onNodesUpdate={(nodes) => console.log('Nodes updated:', nodes)}
           onPathsUpdate={(paths) => console.log('Paths updated:', paths)}
-        />
-
-        {/* Coordinate Finder Component */}
-        <CoordinateFinder 
-          isActive={coordinateFinderActive}
-          onCoordinateFound={(coordinate) => {
-            console.log('📍 Coordinate found:', coordinate);
-            // You can add additional logic here to handle the coordinate
-          }}
-        />
-
-        {/* Path Tester Component */}
-        <PathTester 
-          isActive={pathTesterActive}
-          onTestProgress={(progress) => {
-            console.log('🧪 Test progress:', progress);
-          }}
         />
       </MapContainer>
 
@@ -369,50 +309,6 @@ export default function MapWithGeoSvg() {
           Node Editor
         </label>
 
-        {/* Coordinate Finder Toggle */}
-        <label style={{ display: "block", fontSize: 12, marginBottom: 6 }}>
-          <input 
-            type="checkbox" 
-            checked={coordinateFinderActive} 
-            onChange={e => setCoordinateFinderActive(e.target.checked)}
-            style={{ marginRight: 6 }}
-          />
-          Coordinate Finder
-        </label>
-
-        {/* Location Mapper Toggle */}
-        <label style={{ display: "block", fontSize: 12, marginBottom: 6 }}>
-          <input 
-            type="checkbox" 
-            checked={locationMapperActive} 
-            onChange={e => setLocationMapperActive(e.target.checked)}
-            style={{ marginRight: 6 }}
-          />
-          Location Mapper
-        </label>
-
-        {/* Path Tester Toggle */}
-        <label style={{ display: "block", fontSize: 12, marginBottom: 6 }}>
-          <input 
-            type="checkbox" 
-            checked={pathTesterActive} 
-            onChange={e => setPathTesterActive(e.target.checked)}
-            style={{ marginRight: 6 }}
-          />
-          Path Tester
-        </label>
-
-        {/* Show Predefined Path Toggle */}
-        <label style={{ display: "block", fontSize: 12, marginBottom: 6 }}>
-          <input 
-            type="checkbox" 
-            checked={showPredefinedPath} 
-            onChange={e => setShowPredefinedPath(e.target.checked)}
-            style={{ marginRight: 6 }}
-          />
-          Show Predefined Path
-        </label>
-
         {/* Graph Points Toggle */}
         <label style={{ display: "block", fontSize: 12, marginBottom: 6 }}>
           <input 
@@ -453,3 +349,4 @@ export default function MapWithGeoSvg() {
     </div>
   );
 }
+

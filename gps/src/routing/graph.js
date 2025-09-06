@@ -1,70 +1,78 @@
 // routing/graph.js
-// All lat/lng are Leaflet order: [lat, lng]. The PDF listed (lng lat); flipped here.
-// Source: your uploaded WKT list (see citation in chat).
+// Updated with data from CSV file
+// All lat/lng are Leaflet order: [lat, lng]
 
 // -------------------------
-// 1) Nodes (from the PDF)
+// 1) Nodes (from CSV file)
 // -------------------------
 export const nodes = {
-  // Named entry
-  E0_ENTRY: { lat: 7.252254, lng: 80.593298 }, // "entry op"
+  // Main entry point
+  ENTRY: { lat: 7.2522506, lng: 80.5933134 },
+  
+  // Regular nodes
+  node1: { lat: 7.2522769, lng: 80.5930107 },
+  node2: { lat: 7.2523099, lng: 80.5925297 },
+  node3: { lat: 7.253893, lng: 80.5930046 },
+  node4: { lat: 7.253888, lng: 80.5925685 },
+  node5: { lat: 7.2546491, lng: 80.5929842 },
+  node6: { lat: 7.2539049, lng: 80.5918411 },
+  node7: { lat: 7.2523983, lng: 80.5918244 },
+  node8: { lat: 7.253602, lng: 80.5925657 },
+  node9: { lat: 7.255161, lng: 80.5918512 },
+  node11: { lat: 7.2536083, lng: 80.5918348 },
+  node12: { lat: 7.2545712, lng: 80.5918486 },
+  node13: { lat: 7.254582, lng: 80.590999 },
+  node14: { lat: 7.2543602, lng: 80.5918454 },
+  node15: { lat: 7.254363, lng: 80.5909956 },
+  node16: { lat: 7.2525371, lng: 80.5913015 },
+  node17: { lat: 7.2526047, lng: 80.5913341 },
+  node18: { lat: 7.2526144, lng: 80.591822 },
+  node20: { lat: 7.2528299, lng: 80.5925466 },
+  node21: { lat: 7.2535093, lng: 80.5925666 },
+  node22: { lat: 7.2535073, lng: 80.5926689 },
+  node23: { lat: 7.2537281, lng: 80.5926709 },
+  node24: { lat: 7.2536023, lng: 80.5923867 },
+  node25: { lat: 7.2551585, lng: 80.5923254 },
+  node26: { lat: 7.2551605, lng: 80.5919811 },
+  node27: { lat: 7.2548304, lng: 80.5918516 },
+  node28: { lat: 7.2541129, lng: 80.5918422 },
+  node29: { lat: 7.253762, lng: 80.5918395 },
+  node30: { lat: 7.2531395, lng: 80.591828 },
+  node31: { lat: 7.2528652, lng: 80.5918235 },
+  node32: { lat: 7.2526822, lng: 80.5918215 },
+  node33: { lat: 7.2528401, lng: 80.5918226 },
 
-  // Simple named points (duplicates disambiguated with A/B/C)
-  P2:   { lat: 7.2523006, lng: 80.5930137 },     // "Point 2"
-  P3A:  { lat: 7.2523405, lng: 80.5925229 },     // "Point 3"
-  P28A: { lat: 7.2528175, lng: 80.5925312 },     // "28"
-  P25A: { lat: 7.2537212, lng: 80.5926762 },     // "25"
+  // Entry points
+  entry1: { lat: 7.2528292, lng: 80.5924876 },
+  entry2: { lat: 7.2537276, lng: 80.5926815 },
+  entry3: { lat: 7.2536518, lng: 80.5923843 },
+  entry4: { lat: 7.255215, lng: 80.5923244 },
+  entry5: { lat: 7.2551395, lng: 80.591982 },
+  entry6: { lat: 7.2549027, lng: 80.5921742 },
+  entry11: { lat: 7.2545876, lng: 80.5911806 },
+  entry12: { lat: 7.2544743, lng: 80.5918208 },
+  entry15: { lat: 7.2541129, lng: 80.591818 },
+  entry18: { lat: 7.2534088, lng: 80.5918045 },
+  entry20: { lat: 7.2537558, lng: 80.5918916 },
+  entry22: { lat: 7.2537558, lng: 80.5918916 },
 
-  P22A: { lat: 7.2536653, lng: 80.5923919 },     // "22"
-  P22B: { lat: 7.2538516, lng: 80.5923838 },     // "22"
-  P22C: { lat: 7.2537499, lng: 80.5918876 },     // "22"
+  // Exit points
+  exit1: { lat: 7.2550741, lng: 80.5919847 },
+  exit2: { lat: 7.2547083, lng: 80.592178 },
+  exit8: { lat: 7.2549208, lng: 80.591239 },
+  exit11: { lat: 7.2543721, lng: 80.5911913 },
+  exit13: { lat: 7.2541256, lng: 80.5910651 },
+  exit15: { lat: 7.2536693, lng: 80.5915177 },
+  exit18: { lat: 7.2531408, lng: 80.5911244 },
+  exit21: { lat: 7.2526826, lng: 80.5917957 },
+  exit28: { lat: 7.2528382, lng: 80.5918521 },
 
-  P15A: { lat: 7.2537774, lng: 80.5918066 },     // "15"
-  P15B: { lat: 7.2536763, lng: 80.5914880 },     // "15"
-
-  P17A: { lat: 7.2535981, lng: 80.5916378 },     // "17"
-  P17B: { lat: 7.2535918, lng: 80.5916378 },     // "17"
-
-  P16A: { lat: 7.2536000, lng: 80.5913682 },     // "16"
-  P16B: { lat: 7.2535867, lng: 80.5913696 },     // "16"
-
-  P18A: { lat: 7.2534095, lng: 80.5918001 },     // "18"
-  P18B: { lat: 7.2534123, lng: 80.5911017 },     // "18"
-
-  HV1:  { lat: 7.2547422, lng: 80.5909994 },     // "HighVoltage"
-  HV2:  { lat: 7.2547110, lng: 80.5909977 },     // "HighVoltage"
-
-  P13A: { lat: 7.2541172, lng: 80.5918183 },     // "13"
-  P13B: { lat: 7.2541086, lng: 80.5910632 },     // "13"
-
-  P12A: { lat: 7.2544530, lng: 80.5918204 },     // "12"
-  P11A: { lat: 7.2543811, lng: 80.5912401 },     // "11"
-  P11B: { lat: 7.2545753, lng: 80.5912160 },     // "11"
-  P12B: { lat: 7.2545647, lng: 80.5914627 },     // "12"
-
-  P8A:  { lat: 7.2549063, lng: 80.5911426 },     // "8"
-  P8B:  { lat: 7.2548239, lng: 80.5917997 },     // "8"
-
-  P3B:  { lat: 7.2548287, lng: 80.5919158 },     // "3"
-  P3C:  { lat: 7.2548074, lng: 80.5919131 },     // "3"
-
-  P2B:  { lat: 7.2551121, lng: 80.5921875 },     // "2"
-  P2C:  { lat: 7.2549418, lng: 80.5922023 },     // "2"
-
-  P3D:  { lat: 7.2549006, lng: 80.5921782 },     // "3"
-  P3E:  { lat: 7.2547103, lng: 80.5921768 },     // "3"
-
-  P1A:  { lat: 7.2552127, lng: 80.5922964 },     // "1"
-  P1B:  { lat: 7.2552166, lng: 80.5923233 },     // "1"
-
-  P6A:  { lat: 7.2541784, lng: 80.5920549 },     // "6"
-  P6B:  { lat: 7.2539602, lng: 80.5920723 },     // "6"
-
-  P25B: { lat: 7.2536933, lng: 80.5926735 },     // "25"
-  P28B: { lat: 7.2528340, lng: 80.5921532 },     // "28"
-
-  P14A: { lat: 7.2539364, lng: 80.5916830 },     // "14"
-  P14B: { lat: 7.2539684, lng: 80.5917326 },     // "14"
+  // Dual entry/exit points
+  "entry,exit": { lat: 7.2548297, lng: 80.5918959 },
+  "entry,exit ": { lat: 7.2548303, lng: 80.5918244 },
+  "entry,exit17": { lat: 7.2535873, lng: 80.5916385 },
+  "entry, exit 16": { lat: 7.2535514, lng: 80.5913871 },
+  "exit 21": { lat: 7.2526826, lng: 80.5917957 }
 };
 
 // ----------------------------------------
@@ -93,50 +101,42 @@ function haversineMeters(a, b) {
 
 // ------------------------------------------------------
 // 3) Define a default chain (path) and build undirected edges
-//     - This connects the points in the order they appeared
-//     - Adjust/add branches as you refine the walkway graph
+//     - This connects the points in a logical walking path
+//     - Based on the CSV data structure
 // ------------------------------------------------------
 const defaultChain = [
-  "E0_ENTRY",
-  "P2",
-  "P3A",
-  "P28A",
-  "P25A",
-  "P22A",
-  "P22B",
-  "P22C",
-  "P15A",
-  "P15B",
-  "P17A",
-  "P17B",
-  "P16A",
-  "P16B",
-  "P18A",
-  "P18B",
-  "HV1",
-  "HV2",
-  "P13A",
-  "P13B",
-  "P12A",
-  "P11A",
-  "P11B",
-  "P12B",
-  "P8A",
-  "P8B",
-  "P3B",
-  "P3C",
-  "P2B",
-  "P2C",
-  "P3D",
-  "P3E",
-  "P1A",
-  "P1B",
-  "P6A",
-  "P6B",
-  "P25B",
-  "P28B",
-  "P14A",
-  "P14B",
+  "ENTRY",
+  "node1",
+  "node2",
+  "node7",
+  "node16",
+  "node17",
+  "node18",
+  "node20",
+  "node21",
+  "node22",
+  "node23",
+  "node24",
+  "node8",
+  "node3",
+  "node4",
+  "node5",
+  "node6",
+  "node9",
+  "node11",
+  "node12",
+  "node13",
+  "node14",
+  "node15",
+  "node25",
+  "node26",
+  "node27",
+  "node28",
+  "node29",
+  "node30",
+  "node31",
+  "node32",
+  "node33"
 ];
 
 // Build an undirected adjacency map with weights computed from node coords
@@ -157,11 +157,64 @@ function buildEdgesFromChain(chain) {
   return g;
 }
 
-// If you want to add extra “shortcuts” (cross-links), list them here:
+// If you want to add extra "shortcuts" (cross-links), list them here:
 const extraLinks = [
-  // ["P22B", "P14A"],
-  // ["P25A", "P25B"],
-  // ["P3E", "P6A"],
+  // Connect nearby nodes for better pathfinding
+  ["node1", "node2"],
+  ["node2", "node7"],
+  ["node7", "node16"],
+  ["node16", "node17"],
+  ["node17", "node18"],
+  ["node18", "node20"],
+  ["node20", "node21"],
+  ["node21", "node22"],
+  ["node22", "node23"],
+  ["node23", "node24"],
+  ["node24", "node8"],
+  ["node8", "node3"],
+  ["node3", "node4"],
+  ["node4", "node5"],
+  ["node5", "node6"],
+  ["node6", "node9"],
+  ["node9", "node11"],
+  ["node11", "node12"],
+  ["node12", "node13"],
+  ["node13", "node14"],
+  ["node14", "node15"],
+  ["node15", "node25"],
+  ["node25", "node26"],
+  ["node26", "node27"],
+  ["node27", "node28"],
+  ["node28", "node29"],
+  ["node29", "node30"],
+  ["node30", "node31"],
+  ["node31", "node32"],
+  ["node32", "node33"],
+  
+  // Connect entry points to nearby nodes
+  ["entry1", "node20"],
+  ["entry2", "node22"],
+  ["entry3", "node24"],
+  ["entry4", "node25"],
+  ["entry5", "node26"],
+  ["entry6", "node27"],
+  ["entry11", "node13"],
+  ["entry12", "node27"],
+  ["entry15", "node28"],
+  ["entry18", "node29"],
+  ["entry20", "node29"],
+  ["entry22", "node29"],
+  
+  // Connect exit points to nearby nodes
+  ["exit1", "node26"],
+  ["exit2", "node27"],
+  ["exit8", "node9"],
+  ["exit11", "node13"],
+  ["exit13", "node28"],
+  ["exit15", "node29"],
+  ["exit18", "node30"],
+  ["exit21", "node32"],
+  ["exit28", "node33"],
 ];
 function addExtraLinks(g, links) {
   for (const [a, b] of links) {
@@ -180,12 +233,63 @@ function addExtraLinks(g, links) {
 export const edges = addExtraLinks(buildEdgesFromChain(defaultChain), extraLinks);
 
 // ------------------------------------------------------
-// 4) Building entrances (fill as you map buildings -> nodes)
+// 4) Building entrances (mapped from CSV entry points)
 // ------------------------------------------------------
 export const buildingEntrance = {
-  // Example:
-  // "EE_DEPT": "P22B",
-  // "CIVIL_DEPT": "P15A",
-  // "LIBRARY": "P3D",
+  // Main buildings mapped to their entry points
+  "BUILDING_1": "entry1",
+  "BUILDING_2": "entry2", 
+  "BUILDING_3": "entry3",
+  "BUILDING_4": "entry4",
+  "BUILDING_5": "entry5",
+  "BUILDING_6": "entry6",
+  "BUILDING_11": "entry11",
+  "BUILDING_12": "entry12",
+  "BUILDING_15": "entry15",
+  "BUILDING_18": "entry18",
+  "BUILDING_20": "entry20",
+  "BUILDING_22": "entry22",
+  
+  // Dual purpose entry/exit points
+  "MAIN_ENTRANCE": "entry,exit",
+  "SECONDARY_ENTRANCE": "entry,exit ",
+  "BUILDING_16": "entry, exit 16",
+  "BUILDING_17": "entry,exit17",
+  
+  // You can customize these building names based on your actual buildings
+  // For example:
+  // "LIBRARY": "entry1",
+  // "LAB_BUILDING": "entry2",
+  // "ADMIN_BUILDING": "entry3",
+  // "CLASSROOM_BLOCK": "entry4",
+};
+
+// ------------------------------------------------------
+// 5) Building exits (mapped from CSV exit points)
+// ------------------------------------------------------
+export const buildingExit = {
+  // Main buildings mapped to their exit points
+  "BUILDING_1": "exit1",
+  "BUILDING_2": "exit2",
+  "BUILDING_8": "exit8",
+  "BUILDING_11": "exit11",
+  "BUILDING_13": "exit13",
+  "BUILDING_15": "exit15",
+  "BUILDING_18": "exit18",
+  "BUILDING_21": "exit21",
+  "BUILDING_28": "exit28",
+  
+  // Dual purpose entry/exit points
+  "MAIN_ENTRANCE": "entry,exit",
+  "SECONDARY_ENTRANCE": "entry,exit ",
+  "BUILDING_16": "entry, exit 16",
+  "BUILDING_17": "entry,exit17",
+  
+  // You can customize these building names based on your actual buildings
+  // For example:
+  // "LIBRARY": "exit1",
+  // "LAB_BUILDING": "exit2",
+  // "ADMIN_BUILDING": "exit8",
+  // "CLASSROOM_BLOCK": "exit11",
 };
 

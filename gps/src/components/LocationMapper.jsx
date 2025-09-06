@@ -1,10 +1,22 @@
-// components/LocationWatcher.jsx
-import { useEffect, useRef, useState } from "react";
+// Location Mapper Component
+// Maps real GPS coordinates to SVG reference points
+import { useEffect, useState, useRef } from "react";
 import { Marker, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
+import { findClosestMapping } from "../utils/coordinateMapping";
 
-// simple green dot
-const dotIcon = L.divIcon({
+// SVG reference point marker icon
+const svgReferenceIcon = L.divIcon({
+  className: "svg-reference-marker",
+  html: `<div style="width:16px;height:16px;border-radius:50%;
+         background:#ff6b35; border:3px solid white; box-shadow:0 0 10px rgba(255,107,53,.8);
+         display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:white;">S</div>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+// User location dot
+const userDotIcon = L.divIcon({
   className: "user-dot",
   html: `<div style="width:14px;height:14px;border-radius:50%;
          background:#2b6; border:2px solid white; box-shadow:0 0 6px rgba(0,0,0,.35);"></div>`,
@@ -26,36 +38,44 @@ function distMeters(a, b) {
 }
 
 /**
- * LocationWatcher (improved)
- *
+ * Location Mapper Component
+ * 
  * Props:
- *  - onMove(latlng)    => callback with *smoothed* position
- *  - pane              => leaflet pane for marker/circle (default "routesPane")
- *  - accuracyMax       => reject fixes with accuracy > accuracyMax (m). default 60
- *  - staleMs           => reject fixes older than this many ms. default 8000
- *  - ema               => exponential moving average factor (0..1). default 0.25
- *  - jumpGuard         => max plausible speed (m/s). fixes implying more are ignored. default 8
- *  - reportRaw         => optional callback (ll, accuracy) to inspect raw fixes
+ *  - onMove(latlng)           => callback with *smoothed* position
+ *  - onLocationMapped(mapping) => callback when user location is mapped to SVG reference
+ *  - pane                     => leaflet pane for marker/circle (default "routesPane")
+ *  - accuracyMax              => reject fixes with accuracy > accuracyMax (m). default 60
+ *  - staleMs                  => reject fixes older than this many ms. default 8000
+ *  - ema                      => exponential moving average factor (0..1). default 0.25
+ *  - jumpGuard                => max plausible speed (m/s). fixes implying more are ignored. default 8
+ *  - reportRaw                => optional callback (ll, accuracy) to inspect raw fixes
+ *  - showSVGReference         => show SVG reference marker when mapped (default true)
  */
-export default function LocationWatcher({
+export default function LocationMapper({
   onMove,
+  onLocationMapped,
   pane = "routesPane",
   accuracyMax = 60,
   staleMs = 8000,
   ema = 0.25,
   jumpGuard = 8,
   reportRaw,
+  showSVGReference = true,
 }) {
   const map = useMap();
   const [pos, setPos] = useState(null); // smoothed position (what we render)
   const [acc, setAcc] = useState(null); // accuracy of the *last accepted raw fix*
-  const [status, setStatus] = useState("initializing"); // "initializing", "active", "error", "timeout"
+  const [status, setStatus] = useState("initializing");
   const [errorMessage, setErrorMessage] = useState(null);
   const [debugInfo, setDebugInfo] = useState({ attempts: 0, startTime: Date.now() });
-  const lastRawRef = useRef(null);      // { ll:[lat,lng], t:ms }
+  const [currentMapping, setCurrentMapping] = useState(null); // Current location mapping
+  const [mappingHistory, setMappingHistory] = useState([]); // History of mapped locations
+  
+  const lastRawRef = useRef(null);
   const watchIdRef = useRef(null);
   const retryTimeoutRef = useRef(null);
   const startTimeRef = useRef(Date.now());
+  const lastMappingRef = useRef(null);
 
   const startWatching = () => {
     if (!("geolocation" in navigator)) {
@@ -134,6 +154,9 @@ export default function LocationWatcher({
       onMove?.(smoothed);
       lastRawRef.current = { ll, t };
 
+      // 4) Location mapping - map real GPS to SVG reference
+      mapLocationToSVG(smoothed);
+
       console.log(`🎯 Location accepted! Total time to first fix: ${totalTime}ms`);
 
       // Clear any retry timeout since we got a successful fix
@@ -165,7 +188,6 @@ export default function LocationWatcher({
           setStatus("timeout");
           console.warn(`⏱️ Timeout after ${attemptTime}ms - retrying in 3 seconds`);
           
-          // If this is the first attempt and it timed out, try a different strategy
           const retryDelay = debugInfo.attempts === 1 ? 2000 : 3000;
           console.log(`🔄 Retrying in ${retryDelay}ms with ${debugInfo.attempts === 1 ? 'GPS' : 'same'} strategy`);
           
@@ -181,23 +203,63 @@ export default function LocationWatcher({
 
     // Try fast location first, then fall back to high accuracy
     const fastOptions = {
-      enableHighAccuracy: false,  // Use network/cell towers for faster initial fix
-      maximumAge: 10000,          // Accept older cached data for faster response
-      timeout: 8000,              // Shorter timeout for fast attempt
+      enableHighAccuracy: false,
+      maximumAge: 10000,
+      timeout: 8000,
     };
     
     const accurateOptions = {
-      enableHighAccuracy: true,   // Use GPS for accurate positioning
-      maximumAge: 5000,           // Allow cached fix up to 5s
-      timeout: 15000,             // Longer timeout for GPS
+      enableHighAccuracy: true,
+      maximumAge: 5000,
+      timeout: 15000,
     };
     
-    // Start with fast location, then switch to accurate after first fix
     const options = debugInfo.attempts === 0 ? fastOptions : accurateOptions;
     console.log(`🔧 Using ${debugInfo.attempts === 0 ? 'fast' : 'accurate'} GPS options:`, options);
     
     const id = navigator.geolocation.watchPosition(onSuccess, onError, options);
     watchIdRef.current = id;
+  };
+
+  // Location mapping logic
+  const mapLocationToSVG = (userPosition) => {
+    const mapping = findClosestMapping({ lat: userPosition[0], lng: userPosition[1] });
+    
+    if (mapping) {
+      // User is near a mapped location
+      if (!currentMapping || currentMapping.nodeId !== mapping.nodeId) {
+        // New mapping detected
+        console.log(`🗺️ Location mapped: ${mapping.name} (${mapping.distance.toFixed(1)}m away)`);
+        console.log(`📍 Real GPS: ${mapping.realGPS.lat}, ${mapping.realGPS.lng}`);
+        console.log(`🎯 SVG Reference: ${mapping.svgGPS.lat}, ${mapping.svgGPS.lng}`);
+        
+        setCurrentMapping(mapping);
+        
+        // Add to history
+        setMappingHistory(prev => [
+          ...prev.slice(-9), // Keep last 10 mappings
+          {
+            ...mapping,
+            timestamp: Date.now(),
+            userPosition: [...userPosition]
+          }
+        ]);
+        
+        // Notify parent component
+        onLocationMapped?.(mapping);
+        
+        lastMappingRef.current = mapping.nodeId;
+      }
+    } else {
+      // User is not near any mapped location
+      if (currentMapping) {
+        // User left the mapped area
+        console.log(`🗺️ Left mapped area: ${currentMapping.name}`);
+        
+        setCurrentMapping(null);
+        lastMappingRef.current = null;
+      }
+    }
   };
 
   useEffect(() => {
@@ -214,7 +276,7 @@ export default function LocationWatcher({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accuracyMax, staleMs, ema, jumpGuard]); // keep options reactive
+  }, [accuracyMax, staleMs, ema, jumpGuard]);
 
   // If we haven't received a fresh fix in a while, lightly dim the circle
   const ageMs = lastRawRef.current ? Date.now() - lastRawRef.current.t : 0;
@@ -281,7 +343,10 @@ export default function LocationWatcher({
 
   return (
     <>
-      <Marker position={pos} icon={dotIcon} pane={pane} />
+      {/* User location marker */}
+      <Marker position={pos} icon={userDotIcon} pane={pane} />
+      
+      {/* Accuracy circle */}
       {acc ? (
         <Circle
           center={pos}
@@ -294,6 +359,44 @@ export default function LocationWatcher({
           pane={pane}
         />
       ) : null}
+      
+      {/* SVG Reference marker - shows where user is mapped to in SVG */}
+      {showSVGReference && currentMapping && (
+        <Marker 
+          position={[currentMapping.svgGPS.lat, currentMapping.svgGPS.lng]} 
+          icon={svgReferenceIcon} 
+          pane={pane}
+        />
+      )}
+      
+      {/* Location mapping status display */}
+      {currentMapping && (
+        <div style={{
+          position: 'absolute',
+          top: '10px',
+          left: '10px',
+          background: 'rgba(255, 107, 53, 0.95)',
+          color: 'white',
+          padding: '8px 12px',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          zIndex: 1000,
+          maxWidth: '300px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+        }}>
+          <div>🗺️ Mapped to: {currentMapping.name}</div>
+          <div style={{ fontSize: '12px', opacity: 0.9, marginTop: '2px' }}>
+            Real GPS: {currentMapping.realGPS.lat.toFixed(6)}, {currentMapping.realGPS.lng.toFixed(6)}
+          </div>
+          <div style={{ fontSize: '12px', opacity: 0.9 }}>
+            SVG Ref: {currentMapping.svgGPS.lat.toFixed(6)}, {currentMapping.svgGPS.lng.toFixed(6)}
+          </div>
+          <div style={{ fontSize: '12px', opacity: 0.9 }}>
+            Distance: {currentMapping.distance.toFixed(1)}m
+          </div>
+        </div>
+      )}
       
       {/* Show stale indicator */}
       {isStale && (
