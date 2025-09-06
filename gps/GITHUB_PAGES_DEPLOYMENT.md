@@ -115,3 +115,4 @@ Your app will work perfectly on mobile because:
 ## 🚀 **Ready to Deploy!**
 
 Just push your code to GitHub and enable Pages in the repository settings! 🎉
+

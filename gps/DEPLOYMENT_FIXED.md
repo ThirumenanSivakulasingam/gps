@@ -91,3 +91,4 @@ The build is now **production-ready** and should work on:
 - ✅ **Any static hosting platform**
 
 **Push to GitHub and deploy!** 🎯📱
+

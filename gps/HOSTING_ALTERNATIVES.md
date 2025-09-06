@@ -118,3 +118,4 @@ All these platforms provide:
 - 🔄 **Auto-deploy** from GitHub
 
 **Ready to deploy?** Just push to GitHub and connect to Netlify! 🎉
+

@@ -84,3 +84,4 @@ Once deployed, you'll get a URL like: `https://your-app.vercel.app`
 ## 🚀 **Ready to Deploy!**
 
 Your project is now **100% Vercel-compatible**. Just push to GitHub and deploy! 🎉
+
